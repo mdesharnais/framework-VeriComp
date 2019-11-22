@@ -117,7 +117,7 @@ end
 
 lemma (in backward_simulation) simulation_behaviour :
   "L2.behaves s\<^sub>2 b\<^sub>2 \<Longrightarrow> \<not>is_wrong b\<^sub>2 \<Longrightarrow> match i s\<^sub>1 s\<^sub>2 \<Longrightarrow>
-    \<exists>b\<^sub>1 i'. L1.behaves s\<^sub>1 b\<^sub>1 \<and> behaviours_match (match i') b\<^sub>1 b\<^sub>2"
+    \<exists>b\<^sub>1 i'. L1.behaves s\<^sub>1 b\<^sub>1 \<and> rel_behaviour (match i') b\<^sub>1 b\<^sub>2"
 proof(induction rule: L2.behaves.cases)
   case (state_terminates s2 s2')
   then obtain i' s1' where "L1.eval s\<^sub>1 s1'" and "match i' s1' s2'"
@@ -127,13 +127,13 @@ proof(induction rule: L2.behaves.cases)
   hence "L1.behaves s\<^sub>1 (Terminates s1')"
     using L1.final_finished
     by (simp add: L1.state_terminates \<open>L1.eval s\<^sub>1 s1'\<close>)
-  moreover have "behaviours_match (match i') (Terminates s1') b\<^sub>2"
+  moreover have "rel_behaviour (match i') (Terminates s1') b\<^sub>2"
     by (simp add: \<open>match i' s1' s2'\<close> state_terminates.hyps)
   ultimately show ?case by blast
 next
   case (state_diverges s2)
   then show ?case
-    using backward_simulation_inf behaviours_match.simps L1.state_diverges by fastforce
+    using backward_simulation_inf L1.state_diverges by fastforce
 next
   case (state_goes_wrong s2 s2')
   then show ?case using \<open>\<not>is_wrong b\<^sub>2\<close> by simp

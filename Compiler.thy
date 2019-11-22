@@ -37,7 +37,7 @@ corollary (in compiler) behaviour_preservation:
     compiles: "compile p\<^sub>1 = Some p\<^sub>2" and
     behaves: "L2.behaves (load2 p\<^sub>2) b\<^sub>2" and
     not_wrong: "\<not> is_wrong b\<^sub>2"
-  shows "\<exists>b\<^sub>1 i. L1.behaves (load1 p\<^sub>1) b\<^sub>1 \<and> behaviours_match (match i) b\<^sub>1 b\<^sub>2"
+  shows "\<exists>b\<^sub>1 i. L1.behaves (load1 p\<^sub>1) b\<^sub>1 \<and> rel_behaviour (match i) b\<^sub>1 b\<^sub>2"
   using compile_load[OF compiles] simulation_behaviour[OF behaves not_wrong]
   by blast
 
