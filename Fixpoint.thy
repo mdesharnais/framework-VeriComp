@@ -68,12 +68,14 @@ lemma compiler_composition_fixpoint:
 proof (rule compiler.intro)
   show "compiler_axioms load load (rel_comp_pow match) (fixpoint m compile)"
   proof unfold_locales
-    fix p1 p2
-    assume "fixpoint m compile p1 = Some p2"
+    fix p1 p2 s1
+    assume "fixpoint m compile p1 = Some p2" and "load p1 = Some s1"
     obtain n where "fixpoint m compile p1 = option_comp_pow compile n p1"
       using fixpoint_eq_comp_pow by metis
-    thus "\<exists>i. rel_comp_pow match i (load p1) (load p2)"
-      using \<open>fixpoint m compile p1 = Some p2\<close> assms compiler.compile_load compiler_composition_pow by fastforce
+
+    thus "\<exists>s2 i. load p2 = Some s2 \<and> rel_comp_pow match i s1 s2"
+      using \<open>fixpoint m compile p1 = Some p2\<close> assms compiler.compile_load compiler_composition_pow
+      using \<open>load p1 = Some s1\<close> by fastforce
   qed
 qed (auto intro: assms compiler.axioms backward_simulation_pow)
 

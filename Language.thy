@@ -8,6 +8,6 @@ locale language =
     step :: "'state \<Rightarrow> 'state \<Rightarrow> bool" and
     final :: "'state \<Rightarrow> bool" +
   fixes
-    load :: "'prog \<Rightarrow> 'state"
+    load :: "'prog \<Rightarrow> 'state option"
 
 end
