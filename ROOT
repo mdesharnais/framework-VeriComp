@@ -1,5 +1,6 @@
-session "VeriComp" = "HOL" +
-  options [document = none]
+chapter AFP
+session "VeriComp" (AFP) = "HOL" +
+  options [document = none, timeout = 600]
   theories
     Compiler
     Fixpoint

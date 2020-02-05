@@ -2,8 +2,6 @@ theory Star
   imports Plus
 begin
 
-term "r\<^sup>*"
-
 inductive star :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" for r where
   star_refl: "star r x x" |
   star_step: "r x y \<Longrightarrow> star r y z \<Longrightarrow> star r x z"

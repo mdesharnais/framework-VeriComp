@@ -35,8 +35,8 @@ notation
 lemma finished_inf: "s \<rightarrow>\<^sup>\<infinity> \<Longrightarrow> \<not> finished step s"
   using inf.cases finished_step by metis
 
-(* QUESTION: I would prefer to seperate the two `finished` assumption in a `assumes` clause. But by
- doing that, `s2` is not instanciated in the hypothesis and the goal is unprovable. How can I
+(* QUESTION: I would prefer to separate the two `finished` assumption in a `assumes` clause. But by
+ doing that, `s2` is not instantiated in the hypothesis and the goal is unprovable. How can I
  achieve this separation? *)
 lemma eval_deterministic:
   assumes
