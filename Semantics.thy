@@ -1,6 +1,10 @@
 theory Semantics
   imports Main Behaviour Plus Star Inf begin
 
+text \<open>
+The definition of programming languages is separated into two parts: an abstract semantics and a concrete program representation.
+\<close>
+
 definition finished :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<Rightarrow> bool" where
   "finished r x = (\<nexists>y. r x y)"
 
@@ -14,9 +18,12 @@ locale semantics =
     final :: "'state \<Rightarrow> bool"
   assumes
     final_finished: "final s \<Longrightarrow> finished step s"
-  (* step_deterministic: "step s1 s2 \<Longrightarrow> step s1 s3 \<Longrightarrow> s2 = s3" *)
-
 begin
+
+text \<open>
+The semantics locale represents the semantics as an abstract machine.
+It is expressed by a transition system with a transition relation @{term step}—usually written as an infix (\<rightarrow>) arrow—and final states @{term final}.
+\<close>
 
 lemma finished_step:
   "step s s' \<Longrightarrow> \<not>finished step s"
@@ -69,6 +76,11 @@ inductive behaves :: "'state \<Rightarrow> 'state behaviour \<Rightarrow> bool" 
     "s1 \<rightarrow>\<^sup>\<infinity> \<Longrightarrow> s1 \<Down> Diverges" |
   state_goes_wrong:
     "s1 \<rightarrow>\<^sup>* s2 \<Longrightarrow> finished step s2 \<Longrightarrow> \<not> final s2 \<Longrightarrow> s1 \<Down> (Goes_wrong s2)"
+
+
+text \<open>
+Even though the @{term step} transition relation in the @{locale semantics} locale need not be deterministic, if it happens to be, then the behaviour of a program becomes deterministic too.
+\<close>
 
 lemma behaves_deterministic:
   assumes

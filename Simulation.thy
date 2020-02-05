@@ -20,6 +20,18 @@ locale backward_simulation =
     simulation:
       "match i1 s1 s2 \<Longrightarrow> step2 s2 s2' \<Longrightarrow>
         (\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2') \<or> (\<exists>i2. match i2 s1 s2' \<and> i2 \<sqsubset> i1)"
+begin
+
+text \<open>
+A simulation is defined between two @{locale semantics} L1 and L2.
+A @{term match} predicate expresses that two states from L1 and L2 are equivalent.
+The @{term match} predicate is also parameterized with an ordering used to avoid stuttering.
+The only two assumptions of a backward simulation are that a final state in L2 will also be a final in L1,and that a step in L2 will either represent a non-empty sequence of steps in L1 or will result in an equivalent state.
+Stuttering is ruled out by the requirement that the index on the @{term match} predicate decreases with respect to the well-founded @{term order} ordering.
+\<close>
+
+end
+
 
 locale forward_simulation =
   L1: semantics step1 final1 +
@@ -113,9 +125,12 @@ proof -
     by (auto intro: inf_wf_to_inf well_founded_axioms)
 qed
 
-end
+text \<open>
+The main correctness theorem states that, for any two matching programs, any not wrong behaviour of the later is also a behaviour of the former.
+In other words, if the compiled program does not crash, then its behaviour, whether it terminates or not, is a also a valid behaviour of the source program.
+\<close>
 
-lemma (in backward_simulation) simulation_behaviour :
+lemma simulation_behaviour :
   "L2.behaves s\<^sub>2 b\<^sub>2 \<Longrightarrow> \<not>is_wrong b\<^sub>2 \<Longrightarrow> match i s\<^sub>1 s\<^sub>2 \<Longrightarrow>
     \<exists>b\<^sub>1 i'. L1.behaves s\<^sub>1 b\<^sub>1 \<and> rel_behaviour (match i') b\<^sub>1 b\<^sub>2"
 proof(induction rule: L2.behaves.cases)
@@ -138,6 +153,8 @@ next
   case (state_goes_wrong s2 s2')
   then show ?case using \<open>\<not>is_wrong b\<^sub>2\<close> by simp
 qed
+
+end
 
 definition rel_comp ::
   "('a \<Rightarrow> 'b \<Rightarrow> 'c \<Rightarrow> bool) \<Rightarrow> ('d \<Rightarrow> 'c \<Rightarrow> 'e \<Rightarrow> bool) \<Rightarrow> ('a \<times> 'd) \<Rightarrow> 'b \<Rightarrow> 'e \<Rightarrow> bool" where

@@ -32,9 +32,16 @@ locale compiler =
   assumes
     compile_load:
       "compile p1 = Some p2 \<Longrightarrow> load1 p1 = Some s1 \<Longrightarrow> \<exists>s2 i. load2 p2 = Some s2 \<and> match i s1 s2"
+begin
+
+text \<open>
+The @{locale compiler} locale relates two languages, L1 and L2, by a backward simulation and provides a @{term compile} partial function from a concrete program in L1 to a concrete program in L2.
+The only assumption is that a successful compilation results in a program which, when loaded, is equivalent to the loaded initial program.
+\<close>
 
 
-corollary (in compiler) behaviour_preservation:
+
+corollary behaviour_preservation:
   assumes
     compiles: "compile p1 = Some p2" and
     loads: "load1 p1 = Some s1" "load2 p2 = Some s2" and
@@ -48,6 +55,8 @@ proof -
     using simulation_behaviour[OF behaves not_wrong]
     by simp
 qed
+
+end
 
 lemma compiler_composition:
   assumes
