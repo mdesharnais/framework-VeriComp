@@ -1,5 +1,5 @@
 theory Semantics
-  imports Main Behaviour Plus Star Inf begin
+  imports Main Behaviour Plus Inf begin
 
 text \<open>
 The definition of programming languages is separated into two parts: an abstract semantics and a concrete program representation.
@@ -8,9 +8,17 @@ The definition of programming languages is separated into two parts: an abstract
 definition finished :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<Rightarrow> bool" where
   "finished r x = (\<nexists>y. r x y)"
 
-lemma finished_star: "finished r x \<Longrightarrow> star r x y \<Longrightarrow> x = y"
-  apply (rotate_tac 1)
-  by (induction x y rule: star.induct) (auto simp only: finished_def)
+lemma finished_star:
+  assumes "finished r x"
+  shows "r\<^sup>*\<^sup>* x y \<Longrightarrow> x = y"
+proof (induction y rule: rtranclp_induct)
+  case base
+  then show ?case by simp
+next
+  case (step y z)
+  then show ?case
+    using assms by (auto simp: finished_def)
+qed
 
 locale semantics =
   fixes
@@ -30,7 +38,7 @@ lemma finished_step:
 by (auto simp add: finished_def)
 
 abbreviation eval :: "'state \<Rightarrow> 'state \<Rightarrow> bool" (infix "\<rightarrow>\<^sup>*" 50) where
-  "eval \<equiv> star step"
+  "eval \<equiv> step\<^sup>*\<^sup>*"
 
 abbreviation inf_step :: "'state \<Rightarrow> bool" where
   "inf_step \<equiv> inf step"
@@ -49,24 +57,13 @@ lemma eval_deterministic:
   assumes
     deterministic: "\<And>x y z. step x y \<Longrightarrow> step x z \<Longrightarrow> y = z"
   shows "s1 \<rightarrow>\<^sup>* s2 \<Longrightarrow> s1 \<rightarrow>\<^sup>* s3 \<Longrightarrow> finished step s2 \<Longrightarrow> finished step s3 \<Longrightarrow> s2 = s3"
-proof(induction s1 s2 arbitrary: s3 rule: star.induct)
-  case (star_refl x)
+proof(induction s1 arbitrary: s3 rule: converse_rtranclp_induct)
+  case base
   then show ?case by (simp add: finished_star)
 next
-  case (star_step x y z)
-    note hyps = star_step.hyps
-     and prems = star_step.prems
-     and IH = star_step.IH
-  show "eval x s3 \<Longrightarrow> z = s3"
-  proof(induction rule: star.cases)
-    case (star_refl w)
-    then show ?case
-      using hyps prems by (auto dest: finished_step)
-  next
-    case (star_step x2 y2 z2)
-    then have "y = y2" using hyps by (simp only: deterministic)
-    then show ?case using IH prems hyps star_step by auto
-  qed
+  case (step y z)
+  then show ?case
+    by (metis converse_rtranclpE deterministic finished_step)
 qed
 
 inductive behaves :: "'state \<Rightarrow> 'state behaviour \<Rightarrow> bool" (infix "\<Down>" 50) where

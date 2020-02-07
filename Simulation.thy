@@ -89,21 +89,20 @@ qed
 
 lemma lift_simulation_eval:
   "L2.eval s2 s2' \<Longrightarrow> match i1 s1 s2 \<Longrightarrow> \<exists>i2 s1'. L1.eval s1 s1' \<and> match i2 s1' s2'"
-proof(induction s2 s2' arbitrary: i1 s1 rule: star.induct)
-  case (star_refl s2)
-  thus ?case
-    by (auto intro: star.star_refl)
+proof(induction s2 arbitrary: i1 s1 rule: converse_rtranclp_induct)
+  case (base s2)
+  thus ?case by auto
 next
-  case (star_step s2 s2' s2'')
-  from simulation[OF star_step.prems(1) star_step.hyps(1)] show ?case
+  case (step s2 s2'')
+  from simulation[OF \<open>match i1 s1 s2\<close> \<open>step2 s2 s2''\<close>] show ?case
   proof
-    assume "\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2'"
+    assume "\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2''"
     thus ?thesis
-      by (meson plus_append_star plus_to_star star_step.IH)
+      by (metis plus_tranclp rtranclp_trans step.IH tranclp_into_rtranclp)
   next
-    assume "\<exists>i2. match i2 s1 s2' \<and> i2 \<sqsubset> i1"
+    assume "\<exists>i2. match i2 s1 s2'' \<and> i2 \<sqsubset> i1"
     thus ?thesis
-      by (auto intro: star_step.IH)
+      by (auto intro: step.IH)
   qed
 qed
 

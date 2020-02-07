@@ -1,5 +1,5 @@
 theory Inf
-  imports Plus Star Well_founded
+  imports Plus Well_founded
 begin
 
 coinductive inf :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<Rightarrow> bool" for r where
@@ -44,14 +44,14 @@ lemma step_inf:
 lemma star_inf:
   assumes
     deterministic: "\<And>x y z. r x y \<Longrightarrow> r x z \<Longrightarrow> y = z"
-  shows "star r x y \<Longrightarrow> inf r x \<Longrightarrow> inf r y"
-proof (induction x y rule: star.induct)
-  case (star_refl x)
+  shows "r\<^sup>*\<^sup>* x y \<Longrightarrow> inf r x \<Longrightarrow> inf r y"
+proof (induction y rule: rtranclp_induct)
+  case base
   then show ?case .
 next
-  case (star_step x y z)
-  then show ?case using step_inf deterministic
-    by metis
+  case (step y z)
+  then show ?case
+    using step_inf deterministic by metis
 qed
 
 end
