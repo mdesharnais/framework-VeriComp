@@ -96,7 +96,7 @@ lemma compiler_composition_pow:
   assumes
     "compiler step step final final load load order match compile"
   shows "compiler step step final final load load
-    (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match) (option_comp_pow compile n)"
+    (lexp order\<^sup>+\<^sup>+) (rel_comp_pow match) (option_comp_pow compile n)"
 proof (induction n rule: option_comp_pow.induct)
   case 1
   show ?case

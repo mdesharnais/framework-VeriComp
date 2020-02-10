@@ -259,16 +259,16 @@ lemma backward_simulation_pow:
   assumes
     "backward_simulation step step final final order match"
   shows
-    "backward_simulation step step final final (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match)"
+    "backward_simulation step step final final (lexp order\<^sup>+\<^sup>+) (rel_comp_pow match)"
 proof intro_locales
   show "semantics step final"
     by (auto intro: backward_simulation.axioms assms)
 next
-  show "well_founded (lex_list order\<^sup>+\<^sup>+)"
+  show "well_founded (lexp order\<^sup>+\<^sup>+)"
     using backward_simulation.axioms(3)[OF assms] lex_list_well_founded
     using well_founded.intro well_founded.wf wfP_trancl by blast
 next
-  show "backward_simulation_axioms step step final final (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match)"
+  show "backward_simulation_axioms step step final final (lexp order\<^sup>+\<^sup>+) (rel_comp_pow match)"
   proof unfold_locales
     fix "is" s1 s2
     assume "rel_comp_pow match is s1 s2" and "final s2"
@@ -293,7 +293,7 @@ next
     fix "is" s1 s3 s3'
     assume "rel_comp_pow match is s1 s3" and "step s3 s3'"
     hence "(\<exists>is' s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> length is' = length is \<and> rel_comp_pow match is' s1' s3') \<or>
-      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ is' is)"
+      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lexp order\<^sup>+\<^sup>+ is' is)"
     proof (induction "is" s1 s3 arbitrary: s3' rule: rel_comp_pow.induct)
       case 1
       then show ?case by simp
@@ -309,8 +309,8 @@ next
       next
         assume "\<exists>i'. match i' s1 s3' \<and> order i' i"
         then obtain i' where "match i' s1 s3'" and "order i' i" by auto
-        hence "rel_comp_pow match [i'] s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ [i'] [i]"
-          by (simp add: lex_list_head tranclp.r_into_trancl)
+        hence "rel_comp_pow match [i'] s1 s3' \<and> lexp order\<^sup>+\<^sup>+ [i'] [i]"
+          by (simp add: lexp_head tranclp.r_into_trancl)
         thus ?thesis by blast
       qed
     next
@@ -337,22 +337,22 @@ next
           then obtain i1' where "match i1' s1 s2'" and "order\<^sup>+\<^sup>+ i1' i1" by auto
           hence "rel_comp_pow match (i1' # i2' # is') s1 s3'"
             using \<open>rel_comp_pow match (i2' # is') s2' s3'\<close> by auto
-          moreover have "lex_list order\<^sup>+\<^sup>+ (i1' # i2' # is') (i1 # i2 # is)"
+          moreover have "lexp order\<^sup>+\<^sup>+ (i1' # i2' # is') (i1 # i2 # is)"
             using \<open>order\<^sup>+\<^sup>+ i1' i1\<close> \<open>length is' = length is\<close>
-            by (auto intro: lex_list_head)
+            by (auto intro: lexp_head)
           ultimately show ?thesis by fast
         qed
       next
-        assume "\<exists>i'. rel_comp_pow match i' s2 s3' \<and> lex_list order\<^sup>+\<^sup>+ i' (i2 # is)"
+        assume "\<exists>i'. rel_comp_pow match i' s2 s3' \<and> lexp order\<^sup>+\<^sup>+ i' (i2 # is)"
         then obtain i2' is' where
-          "rel_comp_pow match (i2' # is') s2 s3'" and "lex_list order\<^sup>+\<^sup>+ (i2' # is') (i2 # is)"
-          by (metis lex_list.simps)
+          "rel_comp_pow match (i2' # is') s2 s3'" and "lexp order\<^sup>+\<^sup>+ (i2' # is') (i2 # is)"
+          by (metis lexp.simps)
         thus ?thesis
-          by (metis \<open>match i1 s1 s2\<close> lex_list.simps(1) rel_comp_pow.simps(3))
+          by (metis \<open>match i1 s1 s2\<close> lexp.simps(1) rel_comp_pow.simps(3))
       qed
     qed
     thus "(\<exists>is' s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> rel_comp_pow match is' s1' s3') \<or>
-      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ is' is)"
+      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lexp order\<^sup>+\<^sup>+ is' is)"
       by auto
   qed
 qed

@@ -66,32 +66,32 @@ context
   fixes order :: "'a \<Rightarrow> 'a \<Rightarrow> bool"
 begin
 
-inductive lex_list :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
-  lex_list_head: "order x y \<Longrightarrow> length xs = length ys \<Longrightarrow> lex_list (x # xs) (y # ys)" |
-  lex_list_tail: "lex_list xs ys \<Longrightarrow> lex_list (x # xs) (x # ys)"
+inductive lexp :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
+  lexp_head: "order x y \<Longrightarrow> length xs = length ys \<Longrightarrow> lexp (x # xs) (y # ys)" |
+  lexp_tail: "lexp xs ys \<Longrightarrow> lexp (x # xs) (x # ys)"
 
 end
 
-lemma lex_list_prepend: "lex_list order ys zs \<Longrightarrow> lex_list order (xs @ ys) (xs @ zs)"
-  by (induction xs) (simp_all add: lex_list_tail)
+lemma lexp_prepend: "lexp order ys zs \<Longrightarrow> lexp order (xs @ ys) (xs @ zs)"
+  by (induction xs) (simp_all add: lexp_tail)
 
-lemma lex_list_lex: "lex_list order xs ys \<longleftrightarrow> (xs, ys) \<in> lex {(x, y). order x y}"
+lemma lexp_lex: "lexp order xs ys \<longleftrightarrow> (xs, ys) \<in> lex {(x, y). order x y}"
 proof
-  assume "lex_list order xs ys"
+  assume "lexp order xs ys"
   thus "(xs, ys) \<in> lex {(x, y). order x y}"
-    by (induction xs ys rule: lex_list.induct) simp_all
+    by (induction xs ys rule: lexp.induct) simp_all
 next
   assume "(xs, ys) \<in> lex {(x, y). order x y}"
-  thus "lex_list order xs ys"
-    by (auto intro!: lex_list_prepend intro: lex_list_head simp: lex_conv)
+  thus "lexp order xs ys"
+    by (auto intro!: lexp_prepend intro: lexp_head simp: lex_conv)
 qed
 
-lemma lex_list_wfP: "wfP order \<Longrightarrow> wfP (lex_list order)"
-  by (simp add: lex_list_lex wf_lex wfP_def)
+lemma lex_list_wfP: "wfP order \<Longrightarrow> wfP (lexp order)"
+  by (simp add: lexp_lex wf_lex wfP_def)
 
 lemma lex_list_well_founded:
   assumes "well_founded order"
-  shows "well_founded (lex_list order)"
+  shows "well_founded (lexp order)"
   using well_founded.intro assms(1)[THEN well_founded.wf, THEN lex_list_wfP] by auto
 
 end
