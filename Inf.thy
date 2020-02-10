@@ -1,3 +1,5 @@
+section \<open>Infinitely Transitive Closure\<close>
+
 theory Inf
   imports Well_founded
 begin

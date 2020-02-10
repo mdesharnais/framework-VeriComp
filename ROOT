@@ -1,11 +1,9 @@
 chapter AFP
-session "VeriComp" (AFP) = "HOL" +
-  options [document = none, timeout = 600]
+session VeriComp (AFP) = HOL +
+  options [document = pdf, document_output = "output", timeout = 600]
   theories
     Compiler
     Fixpoint
-    Inf
-    Language
-    Semantics
-    Simulation
-    Well_founded
+  document_files
+    "root.bib"
+    "root.tex"

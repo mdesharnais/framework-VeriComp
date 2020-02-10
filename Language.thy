@@ -1,3 +1,5 @@
+section \<open>The Static Representation of a Language\<close>
+
 theory Language
   imports Semantics
 begin

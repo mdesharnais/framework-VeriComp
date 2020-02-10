@@ -1,3 +1,5 @@
+section \<open>The Dynamic Representation of a Language\<close>
+
 theory Semantics
   imports Main Behaviour Inf begin
 
@@ -30,7 +32,7 @@ begin
 
 text \<open>
 The semantics locale represents the semantics as an abstract machine.
-It is expressed by a transition system with a transition relation @{term step}—usually written as an infix (\<rightarrow>) arrow—and final states @{term final}.
+It is expressed by a transition system with a transition relation @{term step}---usually written as an infix @{text \<rightarrow>} arrow---and final states @{term final}.
 \<close>
 
 lemma finished_step:
@@ -50,9 +52,6 @@ notation
 lemma finished_inf: "s \<rightarrow>\<^sup>\<infinity> \<Longrightarrow> \<not> finished step s"
   using inf.cases finished_step by metis
 
-(* QUESTION: I would prefer to separate the two `finished` assumption in a `assumes` clause. But by
- doing that, `s2` is not instantiated in the hypothesis and the goal is unprovable. How can I
- achieve this separation? *)
 lemma eval_deterministic:
   assumes
     deterministic: "\<And>x y z. step x y \<Longrightarrow> step x z \<Longrightarrow> y = z"
@@ -65,6 +64,8 @@ next
   then show ?case
     by (metis converse_rtranclpE deterministic finished_step)
 qed
+
+subsection \<open>Behaviour of a dynamic execution\<close>
 
 inductive behaves :: "'state \<Rightarrow> 'state behaviour \<Rightarrow> bool" (infix "\<Down>" 50) where
   state_terminates:

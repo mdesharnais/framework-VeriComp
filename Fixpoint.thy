@@ -1,3 +1,5 @@
+section \<open>Fixpoint of Converging Program Transformations\<close>
+
 theory Fixpoint
   imports Compiler
 begin

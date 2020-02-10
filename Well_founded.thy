@@ -1,3 +1,5 @@
+section \<open>Well-foundedness of Relations Defined as Predicate Functions\<close>
+
 theory Well_founded
   imports Main
 begin
@@ -12,7 +14,7 @@ lemmas induct = wfP_induct_rule[OF wf]
 
 end
 
-section \<open>Lexicographic product\<close>
+subsection \<open>Lexicographic product\<close>
 
 context
   fixes
@@ -60,7 +62,7 @@ lemma lex_prodp_well_founded:
   shows "well_founded (lex_prodp r1 r2)"
   using well_founded.intro lex_prodp_wfP assms[THEN well_founded.wf] by auto
 
-section \<open>Lexicographic list\<close>
+subsection \<open>Lexicographic list\<close>
 
 context
   fixes order :: "'a \<Rightarrow> 'a \<Rightarrow> bool"

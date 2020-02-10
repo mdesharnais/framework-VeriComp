@@ -1,3 +1,5 @@
+section \<open>Simulations Between Dynamic Executions\<close>
+
 theory Simulation
   imports Semantics Inf Well_founded
 begin
@@ -138,6 +140,8 @@ proof -
     by (auto intro: inf_wf_to_inf well_founded_axioms)
 qed
 
+subsection \<open>Preservation of behaviour\<close>
+
 text \<open>
 The main correctness theorem states that, for any two matching programs, any not wrong behaviour of the later is also a behaviour of the former.
 In other words, if the compiled program does not crash, then its behaviour, whether it terminates or not, is a also a valid behaviour of the source program.
@@ -168,6 +172,8 @@ next
 qed
 
 end
+
+subsection \<open>Composition of backward simulations\<close>
 
 definition rel_comp ::
   "('a \<Rightarrow> 'b \<Rightarrow> 'c \<Rightarrow> bool) \<Rightarrow> ('d \<Rightarrow> 'c \<Rightarrow> 'e \<Rightarrow> bool) \<Rightarrow> ('a \<times> 'd) \<Rightarrow> 'b \<Rightarrow> 'e \<Rightarrow> bool" where

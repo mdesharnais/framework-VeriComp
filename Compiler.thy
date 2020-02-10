@@ -1,3 +1,5 @@
+section \<open>Compiler Between Static Representations\<close>
+
 theory Compiler
   imports Language Simulation
 begin
@@ -39,6 +41,9 @@ The @{locale compiler} locale relates two languages, L1 and L2, by a backward si
 The only assumption is that a successful compilation results in a program which, when loaded, is equivalent to the loaded initial program.
 \<close>
 
+
+subsection \<open>Preservation of behaviour\<close>
+
 corollary behaviour_preservation:
   assumes
     compiles: "compile p1 = Some p2" and
@@ -55,6 +60,8 @@ proof -
 qed
 
 end
+
+subsection \<open>Composition of compilers\<close>
 
 lemma compiler_composition:
   assumes
