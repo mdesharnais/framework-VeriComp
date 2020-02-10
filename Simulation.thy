@@ -179,7 +179,7 @@ lemma backward_simulation_composition:
     "backward_simulation step2 step3 final2 final3 order2 match2"
   shows
     "backward_simulation step1 step3 final1 final3
-      (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
+      (lex_prodp order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
 proof intro_locales
   show "semantics step1 final1"
     by (auto intro: backward_simulation.axioms assms)
@@ -187,12 +187,12 @@ next
   show "semantics step3 final3"
     by (auto intro: backward_simulation.axioms assms)
 next
-  show "well_founded (lex_prod order1\<^sup>+\<^sup>+ order2)"
+  show "well_founded (lex_prodp order1\<^sup>+\<^sup>+ order2)"
     using assms[THEN backward_simulation.axioms(3)]
-    by (simp add: lex_prod_well_founded well_founded.intro well_founded.wf wfP_trancl)
+    by (simp add: lex_prodp_well_founded well_founded.intro well_founded.wf wfP_trancl)
 next
   show "backward_simulation_axioms step1 step3 final1 final3
-    (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
+    (lex_prodp order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
   proof
     fix i s1 s3
     assume
@@ -212,7 +212,7 @@ next
       using match unfolding rel_comp_def by auto
     from backward_simulation.simulation[OF assms(2) \<open>match2 i2 s2 s3\<close> step]
     show "(\<exists>i' s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> rel_comp match1 match2 i' s1' s3') \<or>
-       (\<exists>i'. rel_comp match1 match2 i' s1 s3' \<and> lex_prod order1\<^sup>+\<^sup>+ order2 i' i)"
+       (\<exists>i'. rel_comp match1 match2 i' s1 s3' \<and> lex_prodp order1\<^sup>+\<^sup>+ order2 i' i)"
       (is "(\<exists>i' s1'. ?STEPS i' s1') \<or> ?STALL")
     proof
       assume "\<exists>i2' s2'. step2\<^sup>+\<^sup>+ s2 s2' \<and> match2 i2' s2' s3'"
@@ -229,7 +229,7 @@ next
         assume "\<exists>i2. match1 i2 s1 s2' \<and> order1\<^sup>+\<^sup>+ i2 i1"
         then obtain i2'' where "match1 i2'' s1 s2'" and "order1\<^sup>+\<^sup>+ i2'' i1" by auto
         hence ?STALL
-          unfolding rel_comp_def i_def lex_prod_def
+          unfolding rel_comp_def i_def lex_prodp_def
           using \<open>match2 i2' s2' s3'\<close> by auto
         thus ?thesis by simp
       qed
@@ -237,7 +237,7 @@ next
       assume "\<exists>i2'. match2 i2' s2 s3' \<and> order2 i2' i2"
       then obtain i2' where "match2 i2' s2 s3'" and "order2 i2' i2" by auto
       hence ?STALL
-        unfolding rel_comp_def i_def lex_prod_def
+        unfolding rel_comp_def i_def lex_prodp_def
         using \<open>match1 i1 s1 s2\<close> by auto
       thus ?thesis by simp
     qed
@@ -310,7 +310,6 @@ next
         assume "\<exists>i'. match i' s1 s3' \<and> order i' i"
         then obtain i' where "match i' s1 s3'" and "order i' i" by auto
         hence "rel_comp_pow match [i'] s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ [i'] [i]"
-          sledgehammer
           by (simp add: lex_list_head tranclp.r_into_trancl)
         thus ?thesis by blast
       qed

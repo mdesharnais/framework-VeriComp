@@ -20,20 +20,24 @@ context
     r2 :: "'b \<Rightarrow> 'b \<Rightarrow> bool"
 begin
 
-definition lex_prod :: "'a \<times> 'b \<Rightarrow> 'a \<times> 'b \<Rightarrow> bool" where
-  "lex_prod x y \<equiv> r1 (fst x) (fst y) \<or> fst x = fst y \<and> r2 (snd x) (snd y)"
+definition lex_prodp :: "'a \<times> 'b \<Rightarrow> 'a \<times> 'b \<Rightarrow> bool" where
+  "lex_prodp x y \<equiv> r1 (fst x) (fst y) \<or> fst x = fst y \<and> r2 (snd x) (snd y)"
 
-lemma lex_prod_wfP:
+lemma lex_prodp_lex_prod:
+  shows "lex_prodp x y \<longleftrightarrow> (x, y) \<in> lex_prod { (x, y). r1 x y } { (x, y). r2 x y }"
+  by (auto simp: lex_prod_def lex_prodp_def)
+
+lemma lex_prodp_wfP:
   assumes
     "wfP r1" and
     "wfP r2"
-  shows "wfP lex_prod"
+  shows "wfP lex_prodp"
 proof (rule wfPUNIVI)
-  show "\<And>P. \<forall>x. (\<forall>y. lex_prod y x \<longrightarrow> P y) \<longrightarrow> P x \<Longrightarrow> (\<And>x. P x)"
+  show "\<And>P. \<forall>x. (\<forall>y. lex_prodp y x \<longrightarrow> P y) \<longrightarrow> P x \<Longrightarrow> (\<And>x. P x)"
   proof -
     fix P
-    assume "\<forall>x. (\<forall>y. lex_prod y x \<longrightarrow> P y) \<longrightarrow> P x"
-    hence hyps: "(\<And>y1 y2. lex_prod (y1, y2) (x1, x2) \<Longrightarrow> P (y1, y2)) \<Longrightarrow> P (x1, x2)" for x1 x2
+    assume "\<forall>x. (\<forall>y. lex_prodp y x \<longrightarrow> P y) \<longrightarrow> P x"
+    hence hyps: "(\<And>y1 y2. lex_prodp (y1, y2) (x1, x2) \<Longrightarrow> P (y1, y2)) \<Longrightarrow> P (x1, x2)" for x1 x2
       by fast
     show "(\<And>x. P x)"
       apply (simp only: split_paired_all)
@@ -42,19 +46,19 @@ proof (rule wfPUNIVI)
       apply (rule wfP_induct_rule[OF assms(1), of "\<lambda>y. \<forall>b. P (y, b)"])
       apply (rule allI)
       apply (rule wfP_induct_rule[OF assms(2), of "\<lambda>b. P (x, b)" for x])
-      using hyps[unfolded lex_prod_def, simplified]
+      using hyps[unfolded lex_prodp_def, simplified]
       by blast
   qed
 qed
 
 end
 
-lemma lex_prod_well_founded:
+lemma lex_prodp_well_founded:
   assumes
     "well_founded r1" and
     "well_founded r2"
-  shows "well_founded (lex_prod r1 r2)"
-  using well_founded.intro lex_prod_wfP assms[THEN well_founded.wf] by auto
+  shows "well_founded (lex_prodp r1 r2)"
+  using well_founded.intro lex_prodp_wfP assms[THEN well_founded.wf] by auto
 
 section \<open>Lexicographic list\<close>
 

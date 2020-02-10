@@ -61,7 +61,7 @@ lemma compiler_composition:
     "compiler step1 step2 final1 final2 load1 load2 order1 match1 compile1" and
     "compiler step2 step3 final2 final3 load2 load3 order2 match2 compile2"
   shows "compiler step1 step3 final1 final3 load1 load3
-    (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2) (compile2 \<Lleftarrow> compile1)"
+    (lex_prodp order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2) (compile2 \<Lleftarrow> compile1)"
 proof (rule compiler.intro) 
   show "language step1 final1"
     using assms(1)[THEN compiler.axioms(1)] .
@@ -70,7 +70,7 @@ next
     using assms(2)[THEN compiler.axioms(2)] .
 next
   show "backward_simulation step1 step3 final1 final3
-     (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
+     (lex_prodp order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
     using backward_simulation_composition[OF assms[THEN compiler.axioms(3)]] .
 next
   show "compiler_axioms load1 load3 (rel_comp match1 match2) (compile2 \<Lleftarrow> compile1)"
