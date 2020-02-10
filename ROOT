@@ -6,7 +6,6 @@ session "VeriComp" (AFP) = "HOL" +
     Fixpoint
     Inf
     Language
-    Plus
     Semantics
     Simulation
     Well_founded

@@ -1,5 +1,5 @@
 theory Semantics
-  imports Main Behaviour Plus Inf begin
+  imports Main Behaviour Inf begin
 
 text \<open>
 The definition of programming languages is separated into two parts: an abstract semantics and a concrete program representation.

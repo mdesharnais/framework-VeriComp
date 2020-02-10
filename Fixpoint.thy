@@ -64,7 +64,7 @@ lemma compiler_composition_fixpoint:
   assumes
     "compiler step step final final load load order match compile"
   shows "compiler step step final final load load
-    (lex_list (plus order)) (rel_comp_pow match) (fixpoint m compile)"
+    (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match) (fixpoint m compile)"
 proof (rule compiler.intro)
   show "compiler_axioms load load (rel_comp_pow match) (fixpoint m compile)"
   proof unfold_locales

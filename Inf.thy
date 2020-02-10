@@ -1,5 +1,5 @@
 theory Inf
-  imports Plus Well_founded
+  imports Well_founded
 begin
 
 coinductive inf :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<Rightarrow> bool" for r where
@@ -7,7 +7,7 @@ coinductive inf :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a \<
 
 coinductive inf_wf :: "('a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> bool) \<Rightarrow> 'b \<Rightarrow> 'a \<Rightarrow> bool" for r order where
   inf_wf: "order n m \<Longrightarrow> inf_wf r order n x \<Longrightarrow> inf_wf r order m x" |
-  inf_wf_step: "plus r x y \<Longrightarrow> inf_wf r order n y \<Longrightarrow> inf_wf r order m x"
+  inf_wf_step: "r\<^sup>+\<^sup>+ x y \<Longrightarrow> inf_wf r order n y \<Longrightarrow> inf_wf r order m x"
 
 lemma inf_wf_to_step_inf_wf:
   assumes "well_founded order"
@@ -21,7 +21,7 @@ proof (induction n arbitrary: x rule: well_founded.induct[OF assms(1)])
   next
     case (inf_wf_step x' y m n')
     then show ?case
-      by (metis inf_wf.inf_wf_step plus.cases)
+      by (metis converse_tranclpE inf_wf.inf_wf_step)
   qed
 qed
 

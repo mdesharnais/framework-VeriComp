@@ -1,5 +1,5 @@
 theory Simulation
-  imports Semantics Plus Inf Well_founded
+  imports Semantics Inf Well_founded
 begin
 
 locale backward_simulation =
@@ -19,7 +19,7 @@ locale backward_simulation =
       "match i s1 s2 \<Longrightarrow> final2 s2 \<Longrightarrow> final1 s1" and
     simulation:
       "match i1 s1 s2 \<Longrightarrow> step2 s2 s2' \<Longrightarrow>
-        (\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2') \<or> (\<exists>i2. match i2 s1 s2' \<and> i2 \<sqsubset> i1)"
+        (\<exists>i2 s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match i2 s1' s2') \<or> (\<exists>i2. match i2 s1 s2' \<and> i2 \<sqsubset> i1)"
 begin
 
 text \<open>
@@ -50,7 +50,7 @@ locale forward_simulation =
       "match i s1 s2 \<Longrightarrow> final1 s1 \<Longrightarrow> final2 s2" and
     simulation:
       "match i1 s1 s2 \<Longrightarrow> step1 s1 s1' \<Longrightarrow>
-        (\<exists>i' s2'. plus step2 s2 s2' \<and> match i' s1' s2') \<or> (\<exists>i'. match i' s1 s2' \<and> i' \<sqsubset> i1)"
+        (\<exists>i' s2'. step2\<^sup>+\<^sup>+ s2 s2' \<and> match i' s1' s2') \<or> (\<exists>i'. match i' s1 s2' \<and> i' \<sqsubset> i1)"
 
 locale bisimulation =
   forward_simulation step1 step2 final1 final2 order match +
@@ -66,24 +66,38 @@ locale bisimulation =
 context backward_simulation begin
 
 lemma lift_simulation_plus:
-  "plus step2 s2 s2' \<Longrightarrow> match i1 s1 s2 \<Longrightarrow>
-    (\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2') \<or>
-    (\<exists>i2. match i2 s1 s2' \<and> plus order i2 i1)"
-proof(induction s2 s2' arbitrary: i1 s1 rule: plus.induct)
-  case (plus_init s2 s2')
-  from simulation[OF plus_init.prems(1) plus_init.hyps(1)] show ?case
-    by (auto intro: plus.plus_init)
+  "step2\<^sup>+\<^sup>+ s2 s2' \<Longrightarrow> match i1 s1 s2 \<Longrightarrow>
+    (\<exists>i2 s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match i2 s1' s2') \<or>
+    (\<exists>i2. match i2 s1 s2' \<and> order\<^sup>+\<^sup>+ i2 i1)"
+  thm tranclp_induct
+proof(induction s2' arbitrary: i1 s1 rule: tranclp_induct)
+  case (base s2')
+  from simulation[OF base.prems(1) base.hyps(1)] show ?case
+    by auto
 next
-  case (plus_step s2 s2' s2'')
-  from simulation[OF plus_step.prems(1) plus_step.hyps(1)] show ?case
+  case (step s2' s2'')
+  show ?case
+    using step.IH[OF \<open>match i1 s1 s2\<close>]
   proof
-    assume "\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2'"
-    thus ?thesis
-      by (meson plus_step.IH plus_trans)
+    assume "\<exists>i2 s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match i2 s1' s2'"
+    then obtain i2 s1' where "step1\<^sup>+\<^sup>+ s1 s1'" and "match i2 s1' s2'" by auto
+    from simulation[OF \<open>match i2 s1' s2'\<close> \<open>step2 s2' s2''\<close>] show ?thesis
+    proof
+      assume "\<exists>i3 s1''. step1\<^sup>+\<^sup>+ s1' s1'' \<and> match i3 s1'' s2''"
+      then obtain i3 s1'' where "step1\<^sup>+\<^sup>+ s1' s1''" and "match i3 s1'' s2''" by auto
+      then show ?thesis
+        using tranclp_trans[OF \<open>step1\<^sup>+\<^sup>+ s1 s1'\<close>] by auto
+    next
+      assume "\<exists>i3. match i3 s1' s2'' \<and> i3 \<sqsubset> i2"
+      then obtain i3 where "match i3 s1' s2''" and "i3 \<sqsubset> i2" by auto
+      then show ?thesis
+        using \<open>step1\<^sup>+\<^sup>+ s1 s1'\<close> by auto
+    qed
   next
-    assume "\<exists>i2. match i2 s1 s2' \<and> i2 \<sqsubset> i1"
-    thus ?thesis
-      by (metis plus_step.IH plus_init plus_trans)
+    assume "\<exists>i2. match i2 s1 s2' \<and> (\<sqsubset>)\<^sup>+\<^sup>+ i2 i1"
+    then obtain i3 where "match i3 s1 s2'" and "(\<sqsubset>)\<^sup>+\<^sup>+ i3 i1" by auto
+    then show ?thesis
+      using simulation[OF \<open>match i3 s1 s2'\<close> \<open>step2 s2' s2''\<close>] by auto
   qed
 qed
 
@@ -96,9 +110,9 @@ next
   case (step s2 s2'')
   from simulation[OF \<open>match i1 s1 s2\<close> \<open>step2 s2 s2''\<close>] show ?case
   proof
-    assume "\<exists>i2 s1'. plus step1 s1 s1' \<and> match i2 s1' s2''"
+    assume "\<exists>i2 s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match i2 s1' s2''"
     thus ?thesis
-      by (metis plus_tranclp rtranclp_trans step.IH tranclp_into_rtranclp)
+      by (meson rtranclp_trans step.IH tranclp_into_rtranclp)
   next
     assume "\<exists>i2. match i2 s1 s2'' \<and> i2 \<sqsubset> i1"
     thus ?thesis
@@ -165,7 +179,7 @@ lemma backward_simulation_composition:
     "backward_simulation step2 step3 final2 final3 order2 match2"
   shows
     "backward_simulation step1 step3 final1 final3
-      (lex_prod (plus order1) order2) (rel_comp match1 match2)"
+      (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
 proof intro_locales
   show "semantics step1 final1"
     by (auto intro: backward_simulation.axioms assms)
@@ -173,12 +187,12 @@ next
   show "semantics step3 final3"
     by (auto intro: backward_simulation.axioms assms)
 next
-  show "well_founded (lex_prod (plus order1) order2)"
-    using assms
-    by (auto intro: backward_simulation.axioms lex_prod_well_founded plus_well_founded)
+  show "well_founded (lex_prod order1\<^sup>+\<^sup>+ order2)"
+    using assms[THEN backward_simulation.axioms(3)]
+    by (simp add: lex_prod_well_founded well_founded.intro well_founded.wf wfP_trancl)
 next
   show "backward_simulation_axioms step1 step3 final1 final3
-    (lex_prod (plus order1) order2) (rel_comp match1 match2)"
+    (lex_prod order1\<^sup>+\<^sup>+ order2) (rel_comp match1 match2)"
   proof
     fix i s1 s3
     assume
@@ -197,23 +211,23 @@ next
     obtain i1 i2 s2 where "match1 i1 s1 s2" and "match2 i2 s2 s3" and i_def: "i = (i1, i2)"
       using match unfolding rel_comp_def by auto
     from backward_simulation.simulation[OF assms(2) \<open>match2 i2 s2 s3\<close> step]
-    show "(\<exists>i' s1'. plus step1 s1 s1' \<and> rel_comp match1 match2 i' s1' s3') \<or>
-       (\<exists>i'. rel_comp match1 match2 i' s1 s3' \<and> lex_prod (plus order1) order2 i' i)"
+    show "(\<exists>i' s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> rel_comp match1 match2 i' s1' s3') \<or>
+       (\<exists>i'. rel_comp match1 match2 i' s1 s3' \<and> lex_prod order1\<^sup>+\<^sup>+ order2 i' i)"
       (is "(\<exists>i' s1'. ?STEPS i' s1') \<or> ?STALL")
     proof
-      assume "\<exists>i2' s2'. plus step2 s2 s2' \<and> match2 i2' s2' s3'"
-      then obtain i2' s2' where "plus step2 s2 s2'" and "match2 i2' s2' s3'" by auto
-      from backward_simulation.lift_simulation_plus[OF assms(1) \<open>plus step2 s2 s2'\<close> \<open>match1 i1 s1 s2\<close>]
+      assume "\<exists>i2' s2'. step2\<^sup>+\<^sup>+ s2 s2' \<and> match2 i2' s2' s3'"
+      then obtain i2' s2' where "step2\<^sup>+\<^sup>+ s2 s2'" and "match2 i2' s2' s3'" by auto
+      from backward_simulation.lift_simulation_plus[OF assms(1) \<open>step2\<^sup>+\<^sup>+ s2 s2'\<close> \<open>match1 i1 s1 s2\<close>]
       show ?thesis
       proof
-        assume "\<exists>i2 s1'. plus step1 s1 s1' \<and> match1 i2 s1' s2'"
-        then obtain i2 s1' where "plus step1 s1 s1'" and "match1 i2 s1' s2'" by auto
+        assume "\<exists>i2 s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match1 i2 s1' s2'"
+        then obtain i2 s1' where "step1\<^sup>+\<^sup>+ s1 s1'" and "match1 i2 s1' s2'" by auto
         hence "?STEPS (i2, i2') s1'"
           by (auto intro: \<open>match2 i2' s2' s3'\<close> simp: rel_comp_def)
         thus ?thesis by auto
       next
-        assume "\<exists>i2. match1 i2 s1 s2' \<and> plus order1 i2 i1"
-        then obtain i2'' where 0: "match1 i2'' s1 s2'" and 1: "plus order1 i2'' i1" by auto
+        assume "\<exists>i2. match1 i2 s1 s2' \<and> order1\<^sup>+\<^sup>+ i2 i1"
+        then obtain i2'' where "match1 i2'' s1 s2'" and "order1\<^sup>+\<^sup>+ i2'' i1" by auto
         hence ?STALL
           unfolding rel_comp_def i_def lex_prod_def
           using \<open>match2 i2' s2' s3'\<close> by auto
@@ -245,16 +259,16 @@ lemma backward_simulation_pow:
   assumes
     "backward_simulation step step final final order match"
   shows
-    "backward_simulation step step final final (lex_list (plus order)) (rel_comp_pow match)"
+    "backward_simulation step step final final (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match)"
 proof intro_locales
   show "semantics step final"
     by (auto intro: backward_simulation.axioms assms)
 next
-  show "well_founded (lex_list (plus order))"
-    using backward_simulation.axioms(3)[OF assms] lex_list_well_founded plus_well_founded
-    by auto
+  show "well_founded (lex_list order\<^sup>+\<^sup>+)"
+    using backward_simulation.axioms(3)[OF assms] lex_list_well_founded
+    using well_founded.intro well_founded.wf wfP_trancl by blast
 next
-  show "backward_simulation_axioms step step final final (lex_list (plus order)) (rel_comp_pow match)"
+  show "backward_simulation_axioms step step final final (lex_list order\<^sup>+\<^sup>+) (rel_comp_pow match)"
   proof unfold_locales
     fix "is" s1 s2
     assume "rel_comp_pow match is s1 s2" and "final s2"
@@ -278,8 +292,8 @@ next
   next
     fix "is" s1 s3 s3'
     assume "rel_comp_pow match is s1 s3" and "step s3 s3'"
-    hence "(\<exists>is' s1'. plus step s1 s1' \<and> length is' = length is \<and> rel_comp_pow match is' s1' s3') \<or>
-      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list (plus order) is' is)"
+    hence "(\<exists>is' s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> length is' = length is \<and> rel_comp_pow match is' s1' s3') \<or>
+      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ is' is)"
     proof (induction "is" s1 s3 arbitrary: s3' rule: rel_comp_pow.induct)
       case 1
       then show ?case by simp
@@ -287,16 +301,17 @@ next
       case (2 i s1 s3)
       from backward_simulation.simulation[OF assms(1) "2.prems"[simplified]] show ?case
       proof
-        assume "\<exists>i' s1'. plus step s1 s1' \<and> match i' s1' s3'"
-        then obtain i' s1' where "plus step s1 s1'" and "match i' s1' s3'" by auto
-        hence "plus step s1 s1' \<and> rel_comp_pow match [i'] s1' s3'" by simp
+        assume "\<exists>i' s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> match i' s1' s3'"
+        then obtain i' s1' where "step\<^sup>+\<^sup>+ s1 s1'" and "match i' s1' s3'" by auto
+        hence "step\<^sup>+\<^sup>+ s1 s1' \<and> rel_comp_pow match [i'] s1' s3'" by simp
         thus ?thesis
           by (metis length_Cons)
       next
         assume "\<exists>i'. match i' s1 s3' \<and> order i' i"
         then obtain i' where "match i' s1 s3'" and "order i' i" by auto
-        hence "rel_comp_pow match [i'] s1 s3' \<and> lex_list (plus order) [i'] [i]"
-          by (simp add: plus_init lex_list_head)
+        hence "rel_comp_pow match [i'] s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ [i'] [i]"
+          sledgehammer
+          by (simp add: lex_list_head tranclp.r_into_trancl)
         thus ?thesis by blast
       qed
     next
@@ -306,38 +321,39 @@ next
         by auto
       from "3.IH"[OF 0 "3.prems"(2)] show ?case
       proof
-        assume "\<exists>is' s2'. Plus.plus step s2 s2' \<and> length is' = length (i2 # is) \<and> rel_comp_pow match is' s2' s3'"
+        assume "\<exists>is' s2'. step\<^sup>+\<^sup>+ s2 s2' \<and> length is' = length (i2 # is) \<and>
+          rel_comp_pow match is' s2' s3'"
         then obtain i2' is' s2' where
-          "plus step s2 s2'" and "length is' = length is" and "rel_comp_pow match (i2' # is') s2' s3'"
+          "step\<^sup>+\<^sup>+ s2 s2'" and "length is' = length is" and "rel_comp_pow match (i2' # is') s2' s3'"
           by (metis Suc_length_conv)
-        from backward_simulation.lift_simulation_plus[OF assms(1) \<open>plus step s2 s2'\<close> \<open>match i1 s1 s2\<close>]
+        from backward_simulation.lift_simulation_plus[OF assms(1) \<open>step\<^sup>+\<^sup>+ s2 s2'\<close> \<open>match i1 s1 s2\<close>]
         show ?thesis
         proof
-          assume "\<exists>i2 s1'. plus step s1 s1' \<and> match i2 s1' s2'"
+          assume "\<exists>i2 s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> match i2 s1' s2'"
           thus ?thesis
             using \<open>rel_comp_pow match (i2' # is') s2' s3'\<close>
             by (metis \<open>length is' = length is\<close> length_Cons rel_comp_pow.simps(3))
         next
-          assume "\<exists>i2. match i2 s1 s2' \<and> plus order i2 i1"
-          then obtain i1' where "match i1' s1 s2'" and "plus order i1' i1" by auto
+          assume "\<exists>i2. match i2 s1 s2' \<and> order\<^sup>+\<^sup>+ i2 i1"
+          then obtain i1' where "match i1' s1 s2'" and "order\<^sup>+\<^sup>+ i1' i1" by auto
           hence "rel_comp_pow match (i1' # i2' # is') s1 s3'"
             using \<open>rel_comp_pow match (i2' # is') s2' s3'\<close> by auto
-          moreover have "lex_list (Plus.plus order) (i1' # i2' # is') (i1 # i2 # is)"
-            using \<open>plus order i1' i1\<close> \<open>length is' = length is\<close>
+          moreover have "lex_list order\<^sup>+\<^sup>+ (i1' # i2' # is') (i1 # i2 # is)"
+            using \<open>order\<^sup>+\<^sup>+ i1' i1\<close> \<open>length is' = length is\<close>
             by (auto intro: lex_list_head)
           ultimately show ?thesis by fast
         qed
       next
-        assume "\<exists>i'. rel_comp_pow match i' s2 s3' \<and> lex_list (plus order) i' (i2 # is)"
+        assume "\<exists>i'. rel_comp_pow match i' s2 s3' \<and> lex_list order\<^sup>+\<^sup>+ i' (i2 # is)"
         then obtain i2' is' where
-          "rel_comp_pow match (i2' # is') s2 s3'" and "lex_list (plus order) (i2' # is') (i2 # is)"
+          "rel_comp_pow match (i2' # is') s2 s3'" and "lex_list order\<^sup>+\<^sup>+ (i2' # is') (i2 # is)"
           by (metis lex_list.simps)
         thus ?thesis
           by (metis \<open>match i1 s1 s2\<close> lex_list.simps(1) rel_comp_pow.simps(3))
       qed
     qed
-    thus "(\<exists>is' s1'. plus step s1 s1' \<and> rel_comp_pow match is' s1' s3') \<or>
-      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list (plus order) is' is)"
+    thus "(\<exists>is' s1'. step\<^sup>+\<^sup>+ s1 s1' \<and> rel_comp_pow match is' s1' s3') \<or>
+      (\<exists>is'. rel_comp_pow match is' s1 s3' \<and> lex_list order\<^sup>+\<^sup>+ is' is)"
       by auto
   qed
 qed
@@ -348,7 +364,7 @@ definition lockstep_backward_simulation where
 
 definition plus_backward_simulation where
   "plus_backward_simulation step1 step2 match \<equiv>
-    \<forall>s1 s2 s2'. match s1 s2 \<longrightarrow> step2 s2 s2' \<longrightarrow> (\<exists>s1'. plus step1 s1 s1' \<and> match s1' s2')"
+    \<forall>s1 s2 s2'. match s1 s2 \<longrightarrow> step2 s2 s2' \<longrightarrow> (\<exists>s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match s1' s2')"
 
 lemma
   assumes "lockstep_backward_simulation step1 step2 match"
@@ -359,8 +375,8 @@ proof safe
   assume "match s1 s2" and "step2 s2 s2'"
   then obtain s1' where "step1 s1 s1'" and "match s1' s2'"
     using assms(1) unfolding lockstep_backward_simulation_def by blast
-  then show "\<exists>s1'. Plus.plus step1 s1 s1' \<and> match s1' s2'"
-    by (auto intro: plus_init)
+  then show "\<exists>s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match s1' s2'"
+    by auto
 qed
 
 lemma lockstep_to_plus_backward_simulation:
@@ -372,11 +388,11 @@ lemma lockstep_to_plus_backward_simulation:
     lockstep_simulation: "\<And>s1 s2 s2'. match s1 s2 \<Longrightarrow> step2 s2 s2' \<Longrightarrow> (\<exists>s1'. step1 s1 s1' \<and> match s1' s2')" and
     match: "match s1 s2" and
     step: "step2 s2 s2'"
-  shows "\<exists>s1'. plus step1 s1 s1' \<and> match s1' s2'"
+  shows "\<exists>s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match s1' s2'"
 proof -
   obtain s1' where "step1 s1 s1'" and "match s1' s2'"
     using lockstep_simulation[OF match step] by auto
-  thus ?thesis by (auto intro: plus_init)
+  thus ?thesis by auto
 qed
 
 lemma lockstep_to_option_backward_simulation:
@@ -399,10 +415,10 @@ lemma plus_to_star_backward_simulation:
     step2 :: "'state2 \<Rightarrow> 'state2 \<Rightarrow> bool" and
     measure :: "'state2 \<Rightarrow> nat"
   assumes
-    star_simulation: "\<And>s1 s2 s2'. match s1 s2 \<Longrightarrow> step2 s2 s2' \<Longrightarrow> (\<exists>s1'. plus step1 s1 s1' \<and> match s1' s2')" and
+    star_simulation: "\<And>s1 s2 s2'. match s1 s2 \<Longrightarrow> step2 s2 s2' \<Longrightarrow> (\<exists>s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match s1' s2')" and
     match: "match s1 s2" and
     step: "step2 s2 s2'"
-  shows "(\<exists>s1'. plus step1 s1 s1' \<and> match s1' s2') \<or> match s1 s2' \<and> measure s2' < measure s2"
+  shows "(\<exists>s1'. step1\<^sup>+\<^sup>+ s1 s1' \<and> match s1' s2') \<or> match s1 s2' \<and> measure s2' < measure s2"
   using star_simulation[OF match step] ..
 
 lemma lockstep_to_plus_forward_simulation:
@@ -414,11 +430,11 @@ lemma lockstep_to_plus_forward_simulation:
     lockstep_simulation: "\<And>s1 s2 s2'. match s1 s2 \<Longrightarrow> step1 s1 s1' \<Longrightarrow> (\<exists>s2'. step2 s2 s2' \<and> match s1' s2')" and
     match: "match s1 s2" and
     step: "step1 s1 s1'"
-  shows "\<exists>s2'. plus step2 s2 s2' \<and> match s1' s2'"
+  shows "\<exists>s2'. step2\<^sup>+\<^sup>+ s2 s2' \<and> match s1' s2'"
 proof -
   obtain s2' where "step2 s2 s2'" and "match s1' s2'"
     using lockstep_simulation[OF match step] by auto
-  thus ?thesis by (auto intro: plus_init)
+  thus ?thesis by auto
 qed
 
 end
